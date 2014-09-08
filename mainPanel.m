@@ -7,11 +7,14 @@
 //
 
 #import "mainPanel.h"
+#import "chatPanel.h"
 #import "singleSocket.h"
 
 @interface mainPanel (){
-    singleSocket *tempSingle;
+    singleSocket *tempSocket;
     NSMutableArray *dataSouce;
+    NSTimer *ter;
+    NSString *desName;
 }
 
 @end
@@ -30,18 +33,31 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-    tempSingle = [singleSocket sharedInstance];
+    tempSocket = [singleSocket sharedInstance];
     [self getFriendList];
-    
-    // Uncomment the following line to preserve selection between presentations.
-    // self.clearsSelectionOnViewWillAppear = NO;
-    
-    // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
-    // self.navigationItem.rightBarButtonItem = self.editButtonItem;
 }
+
 - (void)getFriendList {
     NSString *userName = [[NSUserDefaults standardUserDefaults] stringForKey:@"userName"];
-    dataSouce = [[tempSingle getFriendList:userName] mutableCopy];
+    [tempSocket sendMessage:[NSString stringWithFormat:@"02%@",userName]];
+    
+    ter = [NSTimer scheduledTimerWithTimeInterval:0.1 target:self selector:@selector(getMSG) userInfo:nil repeats:YES];
+    [ter fire];
+    
+}
+- (void)getMSG {
+    NSData *tempdata = [tempSocket getMessage];
+    if (tempdata != nil) {
+        
+        [ter invalidate];
+        NSString *result = [[NSString alloc] initWithData:tempdata encoding:NSUTF8StringEncoding];
+        if ([[result substringToIndex:1]  isEqualToString:@"1"]) {
+
+            dataSouce = [NSMutableArray arrayWithArray:[[result substringFromIndex:1] componentsSeparatedByString:@"#"]];
+        }
+        [self.tableView reloadData];
+    }
+ 
 }
 - (void)didReceiveMemoryWarning
 {
@@ -53,30 +69,36 @@
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
 {
-#warning Potentially incomplete method implementation.
-    // Return the number of sections.
     return 1;
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {
-#warning Incomplete method implementation.
-    // Return the number of rows in the section.
     return [dataSouce count];
 }
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+    desName = dataSouce[indexPath.row];
     [self performSegueWithIdentifier:@"gotoChatRoom" sender:self];
 }
-/*
+
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:<#@"reuseIdentifier"#> forIndexPath:indexPath];
+    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"cell" forIndexPath:indexPath];
     
-    // Configure the cell...
+    if (cell == nil) {
+        cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:@"cell"];
+    }
+    
+    //NSArray *tempData = [(NSString *)dataSouce[indexPath.row] componentsSeparatedByString:@"#"];
+    
+   // NSString *titleImg = [tempData[1] isEqualToString:@"0"] ? @"male" : @"female" ;
+    
+   // cell.imageView.image = [UIImage imageNamed:titleImg];
+    //NSString *name = dataSouce[indexPath.row]
+    cell.textLabel.text = dataSouce[indexPath.row];
     
     return cell;
 }
-*/
 
 /*
 // Override to support conditional editing of the table view.
@@ -116,16 +138,18 @@
 }
 */
 
-/*
+
 #pragma mark - Navigation
 
 // In a storyboard-based application, you will often want to do a little preparation before navigation
 - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender
 {
+    chatPanel *des = segue.destinationViewController;
+    [des setDesName:desName];
     // Get the new view controller using [segue destinationViewController].
     // Pass the selected object to the new view controller.
 }
-*/
+
 
 - (IBAction)search:(id)sender {
     [self performSegueWithIdentifier:@"gotoSearch" sender:self];

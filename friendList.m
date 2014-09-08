@@ -30,7 +30,7 @@
     [super viewDidLoad];
     chatCell *view = [[chatCell alloc] init];
     NSString *str = @"这个frame是初设的，没关系，后面还会重新设置其size。这个frame是初设的，没关系，后面还会重新设置其size。这个frame是初设的，没关系，后面还会重新设置其size。这个frame是初设的，没关系，后面还会重新设置其size。这个frame是初设的，没关系，后面还会重新设置其size。这个frame是初设的，没关系，后面还会重新设置其size。这个frame是初设的，没关系，后面还会重新设置其size。";
-    [view initChatViewWithString:str withFlag:NO];
+    [view initChatViewWithString:str withFlag:YES];
     [self.view addSubview:view];
     // Do any additional setup after loading the view.
 }

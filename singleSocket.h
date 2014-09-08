@@ -27,9 +27,9 @@ enum{
 -(void)connectHost;
 -(void)cutOffSocket;
 -(void)sendMessage:(NSString *)msg;
--(void)sendRegisteMSG:(NSString *)userName withPWD:(NSString *)pwd andSex:(int) sex;
 -(NSData *)getMessage;
 -(NSArray *)getFriendList:(NSString *)userName;
+-(void)deleteFriend:(NSString *)friends theUserName:(NSString *)userName;
 
 
 @end

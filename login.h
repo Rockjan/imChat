@@ -10,6 +10,8 @@
 
 @interface login : UIViewController
 - (IBAction)registeUser:(id)sender;
-- (IBAction)mainPanel:(id)sender;
+- (IBAction)loginAction:(id)sender;
+@property (weak, nonatomic) IBOutlet UITextField *name;
+@property (weak, nonatomic) IBOutlet UITextField *pwd;
 
 @end

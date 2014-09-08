@@ -8,6 +8,7 @@
 
 #import "chatCell.h"
 
+
 @implementation chatCell
 
 - (id)initWithFrame:(CGRect)frame
@@ -27,6 +28,7 @@
     
     label.font = [UIFont systemFontOfSize:14];
     label.text = str;
+    label.textColor = [UIColor blackColor];
     label.numberOfLines = 0;
     
     float totalWidth = [str sizeWithAttributes:@{NSFontAttributeName:[UIFont systemFontOfSize:14]}].width;
@@ -40,6 +42,7 @@
         finalHeight =[str boundingRectWithSize:CGSizeMake(200, MAXFLOAT) options:NSStringDrawingUsesLineFragmentOrigin |NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:[UIFont systemFontOfSize:14]} context:nil].size.height;
     }
     float offSets = (flag ? 12 : 8);
+    
     label.frame = CGRectMake(offSets, 5, finalWidth, finalHeight);
     NSString *imageName = (flag ? @"boubleSelf" : @"bouble");
     UIImage *bubble = [UIImage imageNamed:imageName];
@@ -47,7 +50,8 @@
     UIImageView *bubbleImageView = [[UIImageView alloc] initWithImage:[bubble stretchableImageWithLeftCapWidth:20 topCapHeight:14]];
     bubbleImageView.frame = CGRectMake(0, 0, label.frame.size.width + 10, label.frame.size.height  + 10);
 
-    self.frame = CGRectMake(0, 0, label.frame.size.width + 10, label.frame.size.height  + 10);
+    float ox = (flag ? 0 : 310-finalWidth);
+    self.frame = CGRectMake(ox, 0, label.frame.size.width + 10, label.frame.size.height  + 10);
     
     [self addSubview:bubbleImageView];
     [self addSubview:label];
@@ -60,5 +64,8 @@
     // Drawing code
 }
 */
+
+
+
 
 @end

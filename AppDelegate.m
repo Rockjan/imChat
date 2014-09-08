@@ -15,11 +15,11 @@
 {
     // Override point for customization after application launch.
     singleSocket *tempSocket = [singleSocket sharedInstance];
-    tempSocket.socketHost = @"";
-    tempSocket.socketPort = 8800;
-    [tempSocket initDataSource];
-    [tempSocket connectHost];
+    [tempSocket setSocketHost:@"10.3.135.249"];
+    [tempSocket setSocketPort:9000];
     
+    [tempSocket connectHost];
+
     return YES;
 }
 							

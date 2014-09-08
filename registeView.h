@@ -8,7 +8,7 @@
 
 #import <UIKit/UIKit.h>
 
-@interface registeView : UIViewController
+@interface registeView : UIViewController <UIAlertViewDelegate>
 @property (weak, nonatomic) IBOutlet UITextField *name;
 @property (weak, nonatomic) IBOutlet UITextField *pwd;
 @property (weak, nonatomic) IBOutlet UITextField *repwd;
