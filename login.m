@@ -32,6 +32,7 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
+    self.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"loginBGNew"]];
     tempSocket = [singleSocket sharedInstance];
     _name.delegate = self;
     _pwd.delegate = self;
@@ -85,9 +86,9 @@
 
         NSString *msg = @"用户名或密码错误！";
         NSString *titles = @"出错了";
-        if ([[result substringToIndex:1] isEqualToString:@"1"]) {
+        if (![result isEqualToString:@"0"]) {
             
-            NSArray *tempArr = [[result substringFromIndex:1] componentsSeparatedByString:@"#"];
+            NSArray *tempArr = [result componentsSeparatedByString:@"#"];
             
             if ([name isEqualToString:tempArr[0]] && [pwd isEqualToString:tempArr[1]]) {
                 
@@ -113,5 +114,24 @@
 -(void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event {
     [_name resignFirstResponder];
     [_pwd resignFirstResponder];
+}
+-(void)textFieldDidBeginEditing:(UITextField *)textField
+{
+    [self animateTextField:textField up:YES];
+}
+- (void)textFieldDidEndEditing:(UITextField *)textField
+{
+    [self animateTextField:textField up:NO];
+}
+-(void)animateTextField:(UITextField *)textField up:(BOOL)up
+{
+    const int movementDistance = 50;
+    const float movementDuration = 0.3f;
+    int movement = (up?-movementDistance:movementDistance);
+    [UIView beginAnimations:@"anim" context:nil];
+    [UIView setAnimationBeginsFromCurrentState:YES];
+    [UIView setAnimationDuration:movementDuration];
+    self.view.frame = CGRectOffset(self.view.frame, 0, movement);
+    [UIView commitAnimations];
 }
 @end

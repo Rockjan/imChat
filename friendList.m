@@ -9,8 +9,14 @@
 
 #import "friendList.h"
 #import "chatCell.h"
+#import "singleSocket.h"
 
 @interface friendList ()
+{
+    singleSocket *tempScoket;
+    NSTimer *timer;
+    NSString *un;
+}
 
 @end
 
@@ -28,13 +34,47 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-    chatCell *view = [[chatCell alloc] init];
-    NSString *str = @"这个frame是初设的，没关系，后面还会重新设置其size。这个frame是初设的，没关系，后面还会重新设置其size。这个frame是初设的，没关系，后面还会重新设置其size。这个frame是初设的，没关系，后面还会重新设置其size。这个frame是初设的，没关系，后面还会重新设置其size。这个frame是初设的，没关系，后面还会重新设置其size。这个frame是初设的，没关系，后面还会重新设置其size。";
-    [view initChatViewWithString:str withFlag:YES];
-    [self.view addSubview:view];
+    _searchBar.delegate =self;
+    tempScoket = [singleSocket sharedInstance];
+    un = [[NSUserDefaults standardUserDefaults] valueForKey:@"userName"];
+    
     // Do any additional setup after loading the view.
 }
+- (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event {
+    [_searchBar resignFirstResponder];
+}
+- (void)searchBarSearchButtonClicked:(UISearchBar *)searchBar {
+    NSString *msg = [NSString stringWithFormat:@"04%@",_searchBar.text];
+    [tempScoket sendMessage:msg];
 
+
+    timer = [NSTimer scheduledTimerWithTimeInterval:0.1 target:self selector:@selector(getMSG) userInfo:nil repeats:YES];
+    [timer fire];
+    
+
+}
+-(void)getMSG {
+    
+    NSData *rev = [tempScoket getMessage];
+    if (rev != nil) {
+        NSString *str = [[NSString alloc] initWithData:rev encoding:NSUTF8StringEncoding];
+        if ([str isEqualToString:@"1"]) {
+            NSString *str = [NSString stringWithFormat:@"你成功添加 %@ 为好友！",_name.text];
+            UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"成功" message:str delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil];
+            [alert show];
+        }else {
+            NSArray *temp = [str componentsSeparatedByString:@"#"];
+            
+            NSLog(@"search:%@",str);
+            _name.text = temp[0];
+            _sex.text = ([temp[2] intValue] == 0 ? @"男" : @"女");
+        }
+
+        
+        [timer invalidate];
+    }
+
+}
 - (void)didReceiveMemoryWarning
 {
     [super didReceiveMemoryWarning];
@@ -54,5 +94,13 @@
 
 - (IBAction)goback:(id)sender {
     [self.navigationController popViewControllerAnimated:YES];
+}
+
+- (IBAction)addFriend:(id)sender {
+    NSString *msg = [NSString stringWithFormat:@"07%@#%@",un,_name.text];
+    [tempScoket sendMessage:msg];
+    
+    timer = [NSTimer scheduledTimerWithTimeInterval:0.1 target:self selector:@selector(getMSG) userInfo:nil repeats:YES];
+    [timer fire];
 }
 @end

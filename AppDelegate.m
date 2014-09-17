@@ -18,7 +18,13 @@
     [tempSocket setSocketHost:@"10.3.135.249"];
     [tempSocket setSocketPort:9000];
     
-    [tempSocket connectHost];
+    if (![tempSocket connectHost]) {
+        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"出错" message:@"不能连接到服务器！" delegate:self cancelButtonTitle:@"知道了" otherButtonTitles:nil];
+        [alert show];
+        
+        return NO;
+        
+    }
 
     return YES;
 }

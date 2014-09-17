@@ -51,9 +51,9 @@
         
         [ter invalidate];
         NSString *result = [[NSString alloc] initWithData:tempdata encoding:NSUTF8StringEncoding];
-        if ([[result substringToIndex:1]  isEqualToString:@"1"]) {
+        if (![result isEqualToString:@"0"]) {
 
-            dataSouce = [NSMutableArray arrayWithArray:[[result substringFromIndex:1] componentsSeparatedByString:@"#"]];
+            dataSouce = [NSMutableArray arrayWithArray:[result componentsSeparatedByString:@"#"]];
         }
         [self.tableView reloadData];
     }
@@ -144,8 +144,11 @@
 // In a storyboard-based application, you will often want to do a little preparation before navigation
 - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender
 {
-    chatPanel *des = segue.destinationViewController;
-    [des setDesName:desName];
+    if ([segue.identifier isEqualToString:@"gotoChatRoom"]) {
+        chatPanel *des = segue.destinationViewController;
+        [des setDesName:desName];
+    }
+
     // Get the new view controller using [segue destinationViewController].
     // Pass the selected object to the new view controller.
 }
@@ -156,6 +159,12 @@
 }
 
 - (IBAction)logout:(id)sender {
-    [self performSegueWithIdentifier:@"gotoChatRoom" sender:self];
+   // [self performSegueWithIdentifier:@"gotoChatRoom" sender:self];
+    [self dismissViewControllerAnimated:YES completion:nil];
+    NSUserDefaults *ud = [NSUserDefaults standardUserDefaults];
+    
+    [ud setObject:@"" forKey:@"userName"];
+    [ud setObject:@"" forKey:@"pwd"];
+    [ud setObject:@"" forKey:@"sex"];
 }
 @end

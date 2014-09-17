@@ -27,13 +27,16 @@
 -(void)initDataSource {
     dataSource = [[NSMutableArray alloc] init];
 }
--(void)connectHost{
+-(BOOL)connectHost{
     
     _socket = [[AsyncSocket alloc] initWithDelegate:self];
     
     NSError *error = nil;
     [self initDataSource];
-    [self.socket connectToHost:_socketHost onPort:_socketPort withTimeout:-1 error:&error];
+    
+    BOOL flag = [self.socket connectToHost:_socketHost onPort:_socketPort withTimeout:-1 error:&error];
+    return flag;
+
     
 }
 
@@ -75,7 +78,7 @@
     NSData* aData= [msg dataUsingEncoding: NSUTF8StringEncoding];
     
     [_socket writeData:aData withTimeout:-1 tag:0];
-    [_socket readDataWithTimeout:-1 tag:0];
+    //[_socket readDataWithTimeout:-1 tag:0];
     
 }
 

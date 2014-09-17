@@ -24,7 +24,7 @@ enum{
 
 + (singleSocket *)sharedInstance;
 -(void)initDataSource;
--(void)connectHost;
+-(BOOL)connectHost;
 -(void)cutOffSocket;
 -(void)sendMessage:(NSString *)msg;
 -(NSData *)getMessage;

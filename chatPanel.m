@@ -9,14 +9,14 @@
 #import "chatPanel.h"
 #include "chatCell.h"
 #import "singleSocket.h"
-#import "AsyncSocket.h"
 
 @interface chatPanel ()
 {
     NSMutableArray *dataSouce;
     NSMutableArray *chatCells;
     singleSocket *tempSocket;
-    AsyncSocket    *socket;
+    NSTimer *recTimer;
+    NSString *un;
     
     int counts;
 }
@@ -41,29 +41,42 @@
     [super viewDidLoad];
     _inputText.delegate = self;
     self.title = _desName;
-   // tempSocket = [singleSocket sharedInstance];
+    tempSocket = [singleSocket sharedInstance];
     
-    [self connectHost];
+    un = [[NSUserDefaults standardUserDefaults] stringForKey:@"userName"];
     
     dataSouce = [[NSMutableArray alloc] initWithCapacity:10];
     chatCells = [[NSMutableArray alloc] initWithCapacity:10];
     
-    NSDictionary *spr = @{@"flag":@"1",@"content":@"this is a test, and i don't know how to write the content.So just help yourself.this is a test, and i don't know how to write the content.So just help yourself.this is a test, and i don't know how to write the content.So just help yourself."};
-    NSDictionary *me = @{@"flag":@"0",@"content":@"这个frame是初设的，没关系，后面还会重新设置其size。这个frame是初设的，没关系，后面还会重新设置其size。这个frame是初设的，没关系，后。"};
-    
-    //for (int i = 0 ; i < 12; i++) {
-      //  [dataSouce addObject:@{@"flag":@"#"}];
-        //[dataSouce addObject:me];
-    //}
-   //[dataSouce addObject:spr];
     _chatTable.delegate = self;
     _chatTable.dataSource = self;
     _chatTable.separatorStyle = UITableViewCellSeparatorStyleNone;
     
+    if (recTimer == nil) {
+        
+        recTimer = [NSTimer scheduledTimerWithTimeInterval:0.1 target:self selector:@selector(getMSG) userInfo:nil repeats:YES];
+        [recTimer fire];
+    }
     
-   // [self getChatCells];
-   // [self scrollTableToFoot:YES];
-    // Do any additional setup after loading the view.
+    UIToolbar * topView = [[UIToolbar alloc]initWithFrame:CGRectMake(0, 0, 320, 30)];
+    
+    //设置style
+    [topView setBarStyle:UIBarStyleBlack];
+    
+    //定义两个flexibleSpace的button，放在toolBar上，这样完成按钮就会在最右边
+    UIBarButtonItem * button1 =[[UIBarButtonItem  alloc]initWithBarButtonSystemItem:                                        UIBarButtonSystemItemFlexibleSpace target:self action:nil];
+    
+    UIBarButtonItem * button2 = [[UIBarButtonItem  alloc]initWithBarButtonSystemItem:                                        UIBarButtonSystemItemFlexibleSpace target:self action:nil];
+    
+    //定义完成按钮
+    UIBarButtonItem * doneButton = [[UIBarButtonItem alloc]initWithTitle:@"完成" style:UIBarButtonItemStyleDone  target:self action:@selector(resignKeyboard)];
+    
+    //在toolBar上加上这些按钮
+    NSArray * buttonsArray = [NSArray arrayWithObjects:button1,button2,doneButton,nil];
+    [topView setItems:buttonsArray];
+    //    [textView setInputView:topView];
+    //[_inputText setInputAccessoryView:topView];
+
 }
 
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event {
@@ -186,8 +199,12 @@
         [_chatTable setFrame:tframe];
         [_chatTable setContentSize:sizes];
     }
-    [_chatTable reloadData];
-    self.view.frame = CGRectOffset(self.view.frame, 0, movement);
+    if (counts > 7) {
+        [_chatTable reloadData];
+        self.view.frame = CGRectOffset(self.view.frame, 0, movement);
+    }
+   
+    //_inputText.frame = CGRectOffset(self.view.frame, 0, movement);
     [UIView commitAnimations];
 }
 - (IBAction)goback:(id)sender {
@@ -202,70 +219,29 @@
     [self getChatCells];
     [_chatTable reloadData];
     [self scrollTableToFoot:YES];
-    NSString *sendM = [NSString stringWithFormat:@"05zy#%@#%@",_desName,str];
-    [self sendMessage:sendM];
-    
+    NSString *sendM = [NSString stringWithFormat:@"05%@#%@#%@",un, _desName,str];
+    [tempSocket sendMessage:sendM];
     counts ++;
+    _inputText.text = @"";
 }
 
+- (void)getMSG {
+    NSData *tempdata = [tempSocket getMessage];
+    if (tempdata != nil) {
+        NSString *result = [[NSString alloc] initWithData:tempdata encoding:NSUTF8StringEncoding];
+        NSLog(@"recTimer : %@",result);
+        NSArray *temp = [result componentsSeparatedByString:@"#"];
+        if ([temp[0] isEqualToString:[NSString stringWithFormat:@"05%@",_desName]] && [temp[1] isEqualToString:un]) {
+            NSString *str = temp[2];
+            NSDictionary *me = @{@"flag":@"0",@"content":str};
+            [dataSouce addObject:me];
+            [self getChatCells];
+            [_chatTable reloadData];
+            [self scrollTableToFoot:YES];
+            counts ++;
+        }
 
--(void)connectHost{
-    
-    socket = [[AsyncSocket alloc] initWithDelegate:self];
-    
-    NSError *error = nil;
-   // [self initDataSource];
-    [socket connectToHost:@"10.3.135.249" onPort:9000 withTimeout:-1 error:&error];
-    
-}
-
--(void)onSocket:(AsyncSocket *)sock didConnectToHost:(NSString  *)host port:(UInt16)port {
-    
-    NSLog(@"socket连接成功");
-    
-    [socket readDataWithTimeout:-1 tag:0];
-    
-    // 每隔30s像服务器发送心跳包
-    //_connectTimer = [NSTimer scheduledTimerWithTimeInterval:1 target:self selector:@selector(keepOnLine) userInfo:nil repeats:YES];// 在keepOnLine方法中进行长连接需要向服务器发送的讯息
-    
-    //[_connectTimer fire];
-    
-}
--(void)cutOffSocket{
-    
-    socket.userData = SocketOfflineByUser;// 声明是由用户主动切断
-    
-   // [_connectTimer invalidate];
-    
-    [socket disconnect];
+    }
 }
 
--(void)onSocket:(AsyncSocket *)sock didReadData:(NSData *)data withTag:(long)tag {
-    // 对得到的data值进行解析与转换即可
-    dispatch_async(dispatch_get_main_queue(), ^{
-        NSString *str = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
-        NSArray *temp = [str componentsSeparatedByString:@"#"];
-        NSLog(@"+++++:%@",str);
-        NSDictionary *rec = @{@"flag":@"0",@"content":temp[1]};
-        [dataSouce addObject:rec];
-        [self getChatCells];
-        counts ++;
-        [_chatTable reloadData];
-    });
-
-    [socket readDataWithTimeout:-1 tag:0];
-    //[[NSNotificationCenter defaultCenter] postNotificationName:@"rec" object:nil];
-    
-}
-- (void)onSocket:(AsyncSocket *)sock didWriteDataWithTag:(long)tag {
-    //NSLog(@"didWriteDataWithTag:%ld",tag);
-}
--(void)sendMessage:(NSString *)msg {
-    
-    NSData* aData= [msg dataUsingEncoding: NSUTF8StringEncoding];
-    
-    [socket writeData:aData withTimeout:-1 tag:0];
-    [socket readDataWithTimeout:-1 tag:0];
-    
-}
 @end
